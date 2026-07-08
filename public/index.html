@@ -1,0 +1,175 @@
+﻿<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Validações ENDESA / INMARK</title>
+  <style>
+    :root { --bg:#f4f7f8; --panel:#fff; --ink:#172026; --muted:#60717d; --line:#d9e1e5; --accent:#0b6f7c; --accent-strong:#08525c; --warn:#a95412; --good:#176b35; --bad:#9b1c31; --shadow:0 12px 28px rgba(23,32,38,.08); }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Arial, Helvetica, sans-serif; background:var(--bg); color:var(--ink); }
+    button,input,select,textarea { font:inherit; }
+    .app { min-height:100vh; display:grid; grid-template-rows:auto 1fr; }
+    header { background:#12343b; color:#fff; padding:18px 28px; display:flex; justify-content:space-between; align-items:center; gap:18px; }
+    header h1 { margin:0; font-size:22px; font-weight:700; }
+    header p { margin:4px 0 0; color:#d8e7ea; font-size:14px; }
+    .identity { display:grid; gap:6px; min-width:260px; }
+    .identity label { color:#e6f1f3; font-size:13px; }
+    .identity select { width:100%; border:1px solid rgba(255,255,255,.35); background:#fff; color:var(--ink); border-radius:6px; padding:9px 10px; }
+    main { width:min(1380px,100%); margin:0 auto; padding:24px; display:grid; grid-template-columns:390px 1fr; gap:20px; align-items:start; }
+    aside { background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); }
+    .panel-title { padding:18px 18px 0; margin:0; font-size:18px; }
+    form { padding:18px; display:grid; gap:14px; }
+    .field { display:grid; gap:6px; }
+    label { font-size:13px; font-weight:700; color:#33444d; }
+    input,select,textarea { width:100%; border:1px solid var(--line); border-radius:6px; padding:10px 11px; background:#fff; color:var(--ink); min-height:42px; }
+    textarea { resize:vertical; min-height:82px; }
+    button { border:0; border-radius:6px; padding:10px 14px; cursor:pointer; min-height:42px; font-weight:700; }
+    .primary { background:var(--accent); color:#fff; }
+    .primary:hover { background:var(--accent-strong); }
+    .secondary { background:#e8eef1; color:#21333b; }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .content { display:grid; gap:16px; }
+    .toolbar { display:grid; grid-template-columns:1fr 220px auto; gap:12px; padding:16px; background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); }
+    .records { display:grid; gap:12px; }
+    .record { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; display:grid; gap:14px; }
+    .record-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .record h3 { margin:0; font-size:18px; }
+    .meta { margin-top:5px; color:var(--muted); font-size:13px; display:flex; flex-wrap:wrap; gap:8px 14px; }
+    .badge { display:inline-flex; align-items:center; justify-content:center; border-radius:999px; padding:6px 10px; font-size:12px; font-weight:700; background:#edf3f5; color:#30434b; white-space:nowrap; }
+    .badge.good { background:#dff2e6; color:var(--good); }
+    .badge.bad { background:#f5dce1; color:var(--bad); }
+    .badge.warn { background:#f6e8d7; color:var(--warn); }
+    .details { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+    .detail { border-top:1px solid var(--line); padding-top:10px; min-width:0; }
+    .detail span { display:block; color:var(--muted); font-size:12px; margin-bottom:3px; }
+    .detail strong { display:block; overflow-wrap:anywhere; font-size:14px; }
+    .update-box { display:grid; grid-template-columns:230px 1fr auto; gap:10px; align-items:start; border-top:1px solid var(--line); padding-top:14px; }
+    .history { border-top:1px solid var(--line); padding-top:12px; }
+    .history summary { cursor:pointer; color:var(--accent); font-weight:700; }
+    .history ul { margin:10px 0 0; padding-left:18px; color:#31424a; display:grid; gap:8px; font-size:14px; }
+    .notice { border-left:4px solid var(--accent); background:#eaf5f6; padding:12px 14px; color:#214047; font-size:14px; display:none; }
+    .notice.visible { display:block; }
+    .empty { background:var(--panel); border:1px dashed #aebdc4; border-radius:8px; padding:28px; color:var(--muted); text-align:center; }
+    @media (max-width:1050px) { header { display:grid; } main { grid-template-columns:1fr; } .details { grid-template-columns:1fr 1fr; } .update-box,.toolbar { grid-template-columns:1fr; } }
+    @media (max-width:620px) { main { padding:14px; } header { padding:16px; } .details { grid-template-columns:1fr; } .record-head { display:grid; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>Validações ENDESA / INMARK</h1>
+        <p>Pedidos, ficheiros, estados, histórico e notificações entre parceiros.</p>
+      </div>
+      <div class="identity">
+        <label for="currentPartner">A trabalhar como</label>
+        <select id="currentPartner"><option>ENDESA</option><option>INMARK</option></select>
+      </div>
+    </header>
+    <main>
+      <aside>
+        <h2 class="panel-title">Novo pedido</h2>
+        <form id="requestForm">
+          <div class="field"><label for="contactName">Nome Contacto</label><input id="contactName" name="contactName" required autocomplete="name"></div>
+          <div class="field"><label for="nif">NIF</label><input id="nif" name="nif" required inputmode="numeric" maxlength="9" pattern="[0-9]{9}" placeholder="9 digitos"></div>
+          <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" required autocomplete="email" placeholder="nome@empresa.pt"></div>
+          <div class="field"><label for="phone">Contacto</label><input id="phone" name="phone" required inputmode="tel" autocomplete="tel" placeholder="Telefone ou telemóvel"></div>
+          <div class="field"><label for="birthDate">Data de Nascimento</label><input id="birthDate" name="birthDate" type="date" required></div>
+          <div class="field"><label for="paymentOption">Opção de Pagamento</label><select id="paymentOption" name="paymentOption" required><option value="">Selecionar</option><option>Débito direto</option><option>Transferência bancária</option><option>Referência multibanco</option><option>Cartão</option></select></div>
+          <div class="field"><label for="invoiceMode">Modo de Envio de Faturas</label><select id="invoiceMode" name="invoiceMode" required><option value="">Selecionar</option><option>Email</option><option>Portal do cliente</option><option>Correio</option></select></div>
+          <div class="field"><label for="attachment">Ficheiro</label><input id="attachment" name="attachment" type="file" required></div>
+          <div class="field"><label for="initialComment">Comentário inicial</label><textarea id="initialComment" name="initialComment"></textarea></div>
+          <div class="actions"><button class="primary" type="submit">Criar pedido</button><button class="secondary" type="reset">Limpar</button></div>
+        </form>
+      </aside>
+      <section class="content" aria-label="Pedidos de validação">
+        <div class="toolbar">
+          <input id="search" placeholder="Pesquisar por nome, NIF, e-mail ou contacto">
+          <select id="statusFilter"><option value="">Todos os estados</option><option>Pendente</option><option>Nao atendeu</option><option>Pede reagendamento por indisponibilidade</option><option>Validado</option><option>Nao validado</option><option>Recusa chamada</option></select>
+          <button id="refreshButton" class="secondary" type="button">Atualizar lista</button>
+        </div>
+        <div id="notice" class="notice" role="status"></div>
+        <div id="records" class="records"></div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const statusOptions = ['Nao atendeu','Pede reagendamento por indisponibilidade','Validado','Nao validado','Recusa chamada'];
+    const form = document.getElementById('requestForm');
+    const recordsEl = document.getElementById('records');
+    const noticeEl = document.getElementById('notice');
+    const searchEl = document.getElementById('search');
+    const statusFilterEl = document.getElementById('statusFilter');
+    const currentPartnerEl = document.getElementById('currentPartner');
+    const refreshButton = document.getElementById('refreshButton');
+    let records = [];
+
+    function oppositePartner(partner) { return partner === 'ENDESA' ? 'INMARK' : 'ENDESA'; }
+    function showNotice(message) { noticeEl.textContent = message; noticeEl.classList.add('visible'); window.clearTimeout(showNotice.timer); showNotice.timer = window.setTimeout(() => noticeEl.classList.remove('visible'), 5500); }
+    function badgeClass(status) { if (status === 'Validado') return 'good'; if (status === 'Nao validado' || status === 'Recusa chamada') return 'bad'; if (status === 'Nao atendeu' || status.includes('reagendamento')) return 'warn'; return ''; }
+    function escapeHtml(value) { return String(value || '').replace(/[&<>"']/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[char])); }
+    function formatDate(value) { return new Intl.DateTimeFormat('pt-PT', { dateStyle:'short', timeStyle:'short' }).format(new Date(value)); }
+
+    async function loadRecords() {
+      const response = await fetch('/api/records', { cache: 'no-store' });
+      records = await response.json();
+      renderRecords();
+    }
+
+    function renderRecords() {
+      const term = searchEl.value.trim().toLowerCase();
+      const status = statusFilterEl.value;
+      const filtered = records.filter(record => {
+        const matchesTerm = !term || record.contactName.toLowerCase().includes(term) || record.nif.includes(term) || (record.email || '').toLowerCase().includes(term) || (record.phone || '').toLowerCase().includes(term);
+        const matchesStatus = !status || record.status === status;
+        return matchesTerm && matchesStatus;
+      });
+      if (!filtered.length) { recordsEl.innerHTML = '<div class="empty">Ainda não existem pedidos para mostrar.</div>'; return; }
+      recordsEl.innerHTML = filtered.map(record => `
+        <article class="record" data-id="${record.id}">
+          <div class="record-head"><div><h3>${escapeHtml(record.contactName)}</h3><div class="meta"><span>NIF: ${escapeHtml(record.nif)}</span><span>Criado por ${escapeHtml(record.createdBy)}</span><span>${formatDate(record.createdAt)}</span></div></div><span class="badge ${badgeClass(record.status)}">${escapeHtml(record.status)}</span></div>
+          <div class="details"><div class="detail"><span>E-mail</span><strong>${escapeHtml(record.email)}</strong></div><div class="detail"><span>Contacto</span><strong>${escapeHtml(record.phone || 'Não indicado')}</strong></div><div class="detail"><span>Data de nascimento</span><strong>${escapeHtml(record.birthDate)}</strong></div><div class="detail"><span>Pagamento</span><strong>${escapeHtml(record.paymentOption)}</strong></div><div class="detail"><span>Envio de faturas</span><strong>${escapeHtml(record.invoiceMode)}</strong></div><div class="detail"><span>Ficheiro</span><strong>${escapeHtml(record.fileName)}</strong></div><div class="detail"><span>Última atualização</span><strong>${formatDate(record.updatedAt)}</strong></div><div class="detail"><span>Atualizado por</span><strong>${escapeHtml(record.updatedBy)}</strong></div></div>
+          <div class="update-box"><select class="status-input" aria-label="Novo estado">${statusOptions.map(option => `<option ${record.status === option ? 'selected' : ''}>${option}</option>`).join('')}</select><textarea class="comment-input" aria-label="Comentário da atualização" placeholder="Comentário da atualização"></textarea><button class="primary update-button" type="button">Atualizar</button></div>
+          <details class="history"><summary>Histórico (${record.history.length})</summary><ul>${record.history.map(entry => `<li><strong>${formatDate(entry.date)}</strong> - ${escapeHtml(entry.partner)} definiu <strong>${escapeHtml(entry.status)}</strong>${entry.comment ? `<br>${escapeHtml(entry.comment)}` : ''}</li>`).join('')}</ul></details>
+        </article>`).join('');
+    }
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      const data = new FormData(form);
+      data.append('createdBy', currentPartnerEl.value);
+      const response = await fetch('/api/records', { method: 'POST', body: data });
+      const result = await response.json();
+      if (!response.ok) { showNotice(result.error || 'Não foi possível criar o pedido.'); return; }
+      form.reset();
+      await loadRecords();
+      showNotice(`Novo pedido criado. Notificação enviada para ${oppositePartner(result.createdBy)}.`);
+    });
+
+    recordsEl.addEventListener('click', async event => {
+      const button = event.target.closest('.update-button');
+      if (!button) return;
+      const article = button.closest('.record');
+      const status = article.querySelector('.status-input').value;
+      const comment = article.querySelector('.comment-input').value.trim();
+      const updatedBy = currentPartnerEl.value;
+      const response = await fetch(`/api/records/${article.dataset.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, comment, updatedBy })
+      });
+      const result = await response.json();
+      if (!response.ok) { showNotice(result.error || 'Não foi possível atualizar o pedido.'); return; }
+      await loadRecords();
+      showNotice(`Atualização registada: ${status}. Notificação enviada para ${oppositePartner(updatedBy)}.`);
+    });
+
+    searchEl.addEventListener('input', renderRecords);
+    statusFilterEl.addEventListener('change', renderRecords);
+    refreshButton.addEventListener('click', loadRecords);
+    loadRecords().catch(() => showNotice('Não foi possível ligar ao servidor da aplicação.'));
+  </script>
+</body>
+</html>
+
