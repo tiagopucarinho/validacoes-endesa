@@ -49,11 +49,11 @@ jobs:
           name: node-app
       
       - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_86CA6920E5404E72A86B6256098446F1 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_DAA5D2B56BF44A258B97F15D2A3D7068 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BEE041EAA6CC4984AC9A54FFB40E3B99 }}
+          uses: azure/login@v2
+          with:
+              client-id: ${{ secrets.AZURE_CLIENT_ID }}
+              tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+              subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
