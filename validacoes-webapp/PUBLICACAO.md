@@ -63,3 +63,48 @@ Para produção, substituir ficheiros locais por:
 - Ficheiros: Azure Blob Storage
 - Login: Microsoft Entra ID
 - E-mails: Microsoft Graph ou SMTP autenticado
+
+## Importante: manter dados entre deploys
+
+Para evitar perda de dados em cada publicação, **não guardar dados dentro da pasta publicada da aplicação**.
+
+A app suporta estas variáveis de ambiente:
+
+```text
+DATA_DIR
+UPLOAD_DIR
+DB_FILE
+```
+
+No Azure App Service, configurar em **Environment variables / Application settings**.
+
+### Se o App Service for Windows
+
+Usar:
+
+```text
+DATA_DIR=D:\home\site\appdata\data
+UPLOAD_DIR=D:\home\site\appdata\uploads
+DB_FILE=D:\home\site\appdata\data\records.json
+```
+
+### Se o App Service for Linux
+
+Usar:
+
+```text
+DATA_DIR=/home/site/appdata/data
+UPLOAD_DIR=/home/site/appdata/uploads
+DB_FILE=/home/site/appdata/data/records.json
+```
+
+Depois de configurar estas variáveis, reiniciar o App Service.
+
+### Regra para futuros deploys
+
+O pacote de publicação **não deve incluir**:
+
+- `data/`
+- `uploads/`
+
+Essas pastas devem existir apenas na área persistente do Azure. Assim, novos deploys atualizam o código, mas não substituem registos nem anexos.
