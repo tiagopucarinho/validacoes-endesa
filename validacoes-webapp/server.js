@@ -12,7 +12,7 @@ const UPLOAD_DIR = path.join(ROOT, 'uploads');
 const DB_FILE = path.join(DATA_DIR, 'records.json');
 
 const partners = ['ENDESA', 'INMARK'];
-const statusOptions = ['Nao atendeu', 'Pede reagendamento por indisponibilidade', 'Validado', 'Nao validado', 'Recusa chamada'];
+const statusOptions = ['Pendente', 'Nao atendeu', 'Pede reagendamento por indisponibilidade', 'Validado', 'Nao validado', 'Recusa chamada'];
 
 for (const dir of [PUBLIC_DIR, DATA_DIR, UPLOAD_DIR]) fs.mkdirSync(dir, { recursive: true });
 if (!fs.existsSync(DB_FILE)) fs.writeFileSync(DB_FILE, '[]\n', 'utf8');
@@ -124,8 +124,33 @@ function publicFile(req, res) {
   });
 }
 
+function attachmentFile(req, res) {
+  const url = new URL(req.url, `http://${req.headers.host}`);
+  const storedFile = decodeURIComponent(url.pathname.replace('/api/files/', ''));
+  if (!storedFile || storedFile.includes('/') || storedFile.includes('\\')) return text(res, 400, 'Ficheiro invalido.');
+
+  const records = readRecords();
+  const record = records.find(item => item.storedFile === storedFile);
+  if (!record) return text(res, 404, 'Ficheiro nao encontrado.');
+
+  const filePath = path.normalize(path.join(UPLOAD_DIR, storedFile));
+  if (!filePath.startsWith(UPLOAD_DIR)) return text(res, 403, 'Acesso negado.');
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) return text(res, 404, 'Ficheiro nao encontrado.');
+    const displayName = safeFileName(record.fileName || 'documento');
+    const encodedName = encodeURIComponent(record.fileName || 'documento');
+    res.writeHead(200, {
+      'Content-Type': contentType(record.fileName || storedFile),
+      'Content-Disposition': `inline; filename="${displayName}"; filename*=UTF-8''${encodedName}`,
+      'Cache-Control': 'private, max-age=60'
+    });
+    res.end(data);
+  });
+}
+
 function validateRecord(fields) {
-  const required = ['contactName', 'nif', 'email', 'phone', 'birthDate', 'paymentOption', 'invoiceMode', 'createdBy'];
+  const required = ['contactName', 'nif', 'email', 'phone', 'birthDate', 'contractDate', 'contractType', 'contractedServices', 'paymentOption', 'invoiceMode', 'createdBy'];
   for (const key of required) {
     if (!String(fields[key] || '').trim()) throw new Error(`Campo obrigatorio em falta: ${key}`);
   }
@@ -181,6 +206,9 @@ async function handleApi(req, res) {
         email: fields.email.trim(),
         phone: fields.phone.trim(),
         birthDate: fields.birthDate,
+        contractDate: fields.contractDate,
+        contractType: fields.contractType,
+        contractedServices: fields.contractedServices,
         paymentOption: fields.paymentOption,
         invoiceMode: fields.invoiceMode,
         fileName,
@@ -242,6 +270,11 @@ async function handleApi(req, res) {
 }
 
 const server = http.createServer((req, res) => {
+  if (req.url.startsWith('/api/files/')) {
+    attachmentFile(req, res);
+    return;
+  }
+
   if (req.url.startsWith('/api/')) {
     handleApi(req, res).catch(error => json(res, 500, { error: error.message }));
     return;
@@ -253,6 +286,8 @@ server.listen(PORT, HOST, () => {
   console.log(`App ENDESA / INMARK ativa em http://127.0.0.1:${PORT}`);
   console.log(`Para acesso na rede, usar http://IP-DO-COMPUTADOR:${PORT}`);
 });
+
+
 
 
 
