@@ -28,6 +28,8 @@
     .primary { background:var(--accent); color:#fff; }
     .primary:hover { background:var(--accent-strong); }
     .secondary { background:#e8eef1; color:#21333b; }
+    .danger { background:#f4dce1; color:var(--bad); }
+    .danger:hover { background:#ecc8d0; }
     .actions { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .content { display:grid; gap:16px; }
     .toolbar { display:grid; grid-template-columns:1fr 220px auto; gap:12px; padding:16px; background:var(--panel); border:1px solid var(--line); border-radius:8px; box-shadow:var(--shadow); }
@@ -151,7 +153,7 @@
           <div class="record-body">
             <div class="meta"><span>NIF: ${escapeHtml(record.nif)}</span><span>Criado por ${escapeHtml(record.createdBy)}</span><span>${formatDate(record.createdAt)}</span></div>
             <div class="details"><div class="detail"><span>E-mail</span><strong>${escapeHtml(record.email)}</strong></div><div class="detail"><span>Contacto</span><strong>${escapeHtml(record.phone || 'Não indicado')}</strong></div><div class="detail"><span>Data de nascimento</span><strong>${escapeHtml(record.birthDate)}</strong></div><div class="detail"><span>Assinatura do contrato</span><strong>${escapeHtml(record.contractDate || 'Não indicado')}</strong></div><div class="detail"><span>Tipo de contrato</span><strong>${escapeHtml(record.contractType || 'Não indicado')}</strong></div><div class="detail"><span>Serviços contratados</span><strong>${escapeHtml(record.contractedServices || 'Não indicado')}</strong></div><div class="detail"><span>Pagamento</span><strong>${escapeHtml(record.paymentOption)}</strong></div><div class="detail"><span>Envio de faturas</span><strong>${escapeHtml(record.invoiceMode)}</strong></div><div class="detail"><span>Ficheiro</span><strong>${fileLink(record)}</strong></div><div class="detail"><span>Última atualização</span><strong>${formatDate(record.updatedAt)}</strong></div><div class="detail"><span>Atualizado por</span><strong>${escapeHtml(record.updatedBy)}</strong></div></div>
-            <div class="update-box"><select class="status-input" aria-label="Novo estado">${statusOptions.map(option => `<option ${record.status === option ? 'selected' : ''}>${option}</option>`).join('')}</select><textarea class="comment-input" aria-label="Comentário da atualização" placeholder="Comentário da atualização"></textarea><button class="primary update-button" type="button">Atualizar</button></div>
+            <div class="update-box"><select class="status-input" aria-label="Novo estado">${statusOptions.map(option => `<option ${record.status === option ? 'selected' : ''}>${option}</option>`).join('')}</select><textarea class="comment-input" aria-label="Comentário da atualização" placeholder="Comentário da atualização"></textarea><div class="actions"><button class="primary update-button" type="button">Atualizar</button><button class="danger delete-button" type="button">Remover</button></div></div>
             <details class="history"><summary>Histórico (${record.history.length})</summary><ul>${record.history.map(entry => `<li><strong>${formatDate(entry.date)}</strong> - ${escapeHtml(entry.partner)} definiu <strong>${escapeHtml(entry.status)}</strong>${entry.comment ? `<br>${escapeHtml(entry.comment)}` : ''}</li>`).join('')}</ul></details>
           </div>
         </details>`).join('');
@@ -170,6 +172,21 @@
     });
 
     recordsEl.addEventListener('click', async event => {
+      const deleteButton = event.target.closest('.delete-button');
+      if (deleteButton) {
+        const article = deleteButton.closest('.record');
+        const name = article.querySelector('.record-name h3')?.textContent || 'este pedido';
+        const confirmed = window.confirm(`Tem a certeza que pretende remover ${name}? Esta ação não pode ser anulada.`);
+        if (!confirmed) return;
+
+        const response = await fetch(`/api/records/${article.dataset.id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (!response.ok) { showNotice(result.error || 'Não foi possível remover o pedido.'); return; }
+        await loadRecords();
+        showNotice('Pedido removido com sucesso.');
+        return;
+      }
+
       const button = event.target.closest('.update-button');
       if (!button) return;
       const article = button.closest('.record');

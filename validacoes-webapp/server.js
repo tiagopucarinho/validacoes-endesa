@@ -237,6 +237,23 @@ async function handleApi(req, res) {
   }
 
   const updateMatch = /^\/api\/records\/([^/]+)$/.exec(url.pathname);
+  if (req.method === 'DELETE' && updateMatch) {
+    const records = readRecords();
+    const index = records.findIndex(item => item.id === updateMatch[1]);
+    if (index === -1) return json(res, 404, { error: 'Pedido nao encontrado.' });
+
+    const [record] = records.splice(index, 1);
+    if (record.storedFile) {
+      const filePath = path.normalize(path.join(UPLOAD_DIR, record.storedFile));
+      if (filePath.startsWith(UPLOAD_DIR) && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+    writeRecords(records);
+    return json(res, 200, { ok: true });
+  }
+
   if (req.method === 'PATCH' && updateMatch) {
     try {
       const payload = JSON.parse((await readBody(req)).toString('utf8') || '{}');
